@@ -1,0 +1,200 @@
+<html>
+
+<style>
+    body {
+        font-family: system-ui, serif;
+        display: grid;
+        place-items: center;
+        height: 90vh;
+    }
+    .outdiv{
+        display: grid;
+        grid-row-gap:1.5em;
+        grid-column-gap: 0.25em;
+        grid-template-columns: repeat(4,1fr);
+        min-width: 600px;
+        padding: 3em;
+        background-color: rgb(250, 250, 250);
+        border-radius: 1em;
+        box-shadow: -1px 1.5px 3px lightgray;
+
+    }
+    .head{
+        grid-column:1/5;
+        display: grid;
+        grid-template-columns: 1fr;
+        margin-bottom: 1em;
+    }
+    .cvss{
+        width:100%;
+        grid-column:1/4;
+        display: grid;
+        place-items: center;
+    }
+    .score{
+        padding: 0.5em;
+        border-radius: 0.25em;
+        width:100%;
+        font-size: 1.15em;
+    }
+    .button{
+        padding: 0.5em;
+        border-radius: 0.25em;
+        grid-column:4/5;
+        background-color: skyblue;
+        border-radius: 0.5em;
+        text-align: center;
+        font-weight: bold;
+        font-size:1.15em;
+        transition: 0.25s;
+    }
+    .button:active {
+        background-color: gold;
+        box-shadow: 0 -1px #666;
+        transform: translateY(1px);
+    }
+    .button:hover{
+        background-color: lightblue;
+        cursor: pointer;
+    }
+    .payout{
+        grid-column:1/5;
+        place-items: center;
+        display: grid;
+        background-color: gold;
+        border-radius: 0.5em;
+        margin-top:1em;
+        margin-bottom: 1em;  
+        font-size: 1.5em;
+        transition: 0.5s;
+    }
+    .misc{
+        grid-column:1/5;
+        display: grid;
+        grid-gap: 0.4em;
+        grid-template-columns: 1fr;
+        place-items: left;
+        transition: 0.5s;
+    }
+    .headpay{
+        font-size: 2em;
+        border-bottom: solid 1px;
+        font-weight: bold;
+    }
+    .headcal{
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .poof{
+        visibility: hidden;
+        opacity: 0;
+    }
+    .really{
+        background-color:transparent;
+        font-size: 1.5em;
+    }
+    @media only screen and (max-width: 600px) {
+        .outdiv{
+            width:100%;
+        }
+    }
+    .p1{
+        border-radius: 0.25em;
+        border:solid 2px crimson;
+        padding: 0.2em;
+    }
+    .p2{
+        border-radius: 0.25em;
+        border:solid 2px darkorange;
+        padding: 0.2em;
+    }
+    .p3{
+        border-radius: 0.25em;
+        border:solid 2px yellowgreen;
+        padding: 0.2em;
+    }
+    .p4{
+        border-radius: 0.25em;
+        border:solid 2px green;
+        padding: 0.2em;
+    }
+
+</style>
+
+<body>
+<div class="outdiv">
+    <div class="head"><span class="headpay">PAYOUT</span><span class="headcal">CALCULATOR</span></div>
+    <div class="cvss">
+        <input class="score" type="number" placeholder="CVSS Score" id="cvss" name="score" min="0" max="10" step="0.1">
+    </div>
+    <div class="button" >CHECK</div>
+    <div class="payout"><H1 id='amount'>$ Payout Amount </H1></div>
+    <div class="misc">
+        <span>Priority: <span id="pry"></span></span>
+        <span>Payout Range: <span id="range"></span></span>
+        <span>CVSS Calculator: <a href="https://www.first.org/cvss/calculator/3.0" target="_blank" rel="noopener noreferrer">first.org/cvss/calculator/3.0</a></span>
+    </div>  
+</div>
+</body>
+<script>
+    document.getElementsByName("score")[0].addEventListener('change', payout);
+    //values
+    p1_h=2500;p1_l=2100;p2_h=1250;p2_l=1000;p3_h=600;p3_l=450;p4_h=200;p4_l=150;
+    p1sh=10;p1sl=9;p2sh=8.9;p2sl=7;p3sh=6.9;p3sl=4;p4sh=3.9;p4sl=0.1;
+
+    var p1m,p2m,p3m,p4m;
+
+    function visiblity(boo){
+        if(boo==false){
+            document.getElementsByClassName("payout")[0].classList.add("poof");
+            document.getElementsByClassName("misc")[0].classList.add("poof");
+        }else{
+            document.getElementsByClassName("payout")[0].classList.remove("poof");
+            document.getElementsByClassName("misc")[0].classList.remove("poof");
+            document.getElementById("pry").removeAttribute("class")
+        }
+    }
+    function cal_slope(){
+    p1m=(p1_h-p1_l)/(p1sh-p1sl);
+    p2m=(p2_h-p2_l)/(p2sh-p2sl);
+    p3m=(p3_h-p3_l)/(p3sh-p3sl);
+    p4m=(p4_h-p4_l)/(p4sh-p4sl);}
+
+    function payout(){
+    visiblity(false);
+    var cvss = this.value;
+    if (cvss<p3sl) calcu_payot(cvss,p4m,p4sl,p4_l,"p4");
+    else if (cvss<p2sl) calcu_payot(cvss,p3m,p3sl,p3_l,"p3");
+    else if (cvss<p1sl) calcu_payot(cvss,p2m,p2sl,p2_l,"p2");
+    else calcu_payot(cvss,p1m,p1sl,p1_l,"p1");
+    }
+
+    function placefocus(){
+        document.getElementById("cvss").focus();
+        document.getElementById("cvss").select();
+    }
+
+    function calcu_payot(cvss,m,x,y,pry){
+        visiblity(true);
+        if(cvss>10 || cvss<0.1)
+        {document.getElementById("amount").innerHTML = "&#128530;";
+        document.getElementsByClassName("payout")[0].classList.add("really");
+        document.getElementsByClassName("misc")[0].classList.add("poof");}
+        else{
+            document.getElementsByClassName("payout")[0].classList.remove("really");
+            document.getElementsByClassName("misc")[0].classList.remove("poof");
+            pay = m*(cvss-x)+y;
+            document.getElementById("amount").innerText = "$ "+ pay.toFixed(2);
+            a = document.getElementById("pry");
+            a.innerText = pry.toUpperCase();
+            a.classList.add(pry);
+            b = document.getElementById("range").innerText = "$" + window[pry+"_l"] + " - $" + window[pry+"_h"];
+            }
+    }
+
+    cal_slope();
+    visiblity(false);
+    placefocus();
+
+</script>
+</html>
